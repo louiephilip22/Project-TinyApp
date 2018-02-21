@@ -8,6 +8,10 @@
   <ul>
     <% Object.keys(urls).forEach(function (key) { %>
      <li><%= key %> : <%= urls[key] %></li>
+      <% var urlID = "/urls/" + key + "/delete/" %>
+      <form method = "POST" action = <%= urlID %>>
+        <button> Delete </button>
+      </form>
     <% }) %>
   </ul>
 </body>
