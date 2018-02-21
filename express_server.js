@@ -60,3 +60,12 @@ app.post("/urls/:id/delete", (req, res) => {
   delete urlDatabase[req.params.id];
   res.redirect('http://localhost:8080/urls/');
 });
+
+app.post("/urls/:id", (req, res) => {
+  urlDatabase[req.params.id] = req.params.longURL;
+  res.redirect('http://localhost:8080/urls/');
+});
+
+
+
+
