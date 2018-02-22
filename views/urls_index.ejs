@@ -1,20 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <title>TinyApp</title>
 </head>
 <body>
   <% include partials/_header %>
-    <!-- Add your EJS code here -->
   <ul>
-    <% Object.keys(urls).forEach(function (key) { %>
-     <li><%= key %></a> : <%= urls[key] %>
-       <a href="urls/<%= key %>">Edit</a>
-       <form method="POST" action= "/urls/<%= key %>/delete/" >
+    <% for (let shortURL in urls) { %>
+     <li><%= shortURL %></a> : <%= urls[shortURL] %>
+       <a href="urls/<%= shortURL %>">Edit</a>
+       <form method="POST" action= "/urls/<%= shortURL %>/delete/" >
          <button>Delete 🗑</button>
        </form>
      </li>
-    <% }) %>
+    <% } %>
   </ul>
 </body>
 </html>
