@@ -1,3 +1,16 @@
 <header>
-  <h1>Project: TinyApp - Lighthouse Labs</h1>
+  <h1>TinyApp</h1>
+  <% if (username) { %>
+    <p>Username: <%= username %></p>
+    <form method="POST" action="/logout">
+      <button type="submit"> Logout</button>
+    </form>
+  <% } else  { %>
+    <form method="POST" action="/login">
+      <label>Username:</label>
+      <input type="text" name="username" value="<%= username %>">
+      <button type="submit">Submit</button>
+    </form>
+  <% } %>
+  <p><a href="/urls/new" >Make new one</a><p><a href="/urls">Show all</a></p></p>
 </header>
