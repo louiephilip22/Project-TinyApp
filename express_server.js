@@ -1,31 +1,44 @@
-var express = require("express");
-var app = express();
+const express = require("express");
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
+const bcrypt = require('bcrypt');
+
+var app = express();
+
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: 'thequickbrownfoxjumpsoverthelazydog'
+}));
 
 var PORT = process.env.PORT || 8080;
 
 app.set("view engine", "ejs");
 
+const usersDB = {};
+
+let urlsDB = {};
+
 function generateRandomString() {
   let randomStr = "";
   const alphabetAndDigits = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
   for (var i = 0; i < 6; i++) {
     randomStr += alphabetAndDigits.charAt(Math.floor(Math.random() * alphabetAndDigits.length));
   }
   return randomStr;
 }
 
-function hasUser(user_id) {
-  for (let user in usersDB) {
-    if (user === user_id) {
-      return true;
+function hasUser(userID) {
+  if (!userID) {
+    return false;
+  } else {
+    for (let user in usersDB) {
+      if (user === userID) {
+        return true;
+      }
     }
-  }
   return false;
+  }
 }
 
 function hasUserEmail (email) {
@@ -37,19 +50,7 @@ function hasUserEmail (email) {
   return false;
 }
 
-function hasUserPassword (email, password) {
-  for (let user in usersDB) {
-    if (usersDB[user].email === email) {
-      if (usersDB[user].password === password) {
-        return true;
-      }
-      return false;
-    }
-  }
-  return false;
-}
-
-function getUser_id(email) {
+function getUserID(email) {
   for (let user in usersDB) {
     if (usersDB[user].email === email) {
       return usersDB[user].id;
@@ -66,9 +67,15 @@ function getShortURL (url, userURLs) {
   return undefined;
 }
 
-const usersDB = {};
+function getLongURL(shortURL) {
 
-let urlsDB = {};
+  for (let index in urlsDB) {
+    if (urlsDB[index].hasOwnProperty(shortURL)) {
+      return urlsDB[index][shortURL];
+    }
+  }
+  return - 1;
+}
 
 app.get('/db.json', (req, res) => {
   res.json({ usersDB, urlsDB });
@@ -83,8 +90,9 @@ app.get("/login", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  if (hasUser(req.cookies.user_id)) {
-    const templateVars = { user: usersDB[req.cookies.user_id]};
+  const userID = req.session.userID;
+  if (hasUser(userID)) {
+    const templateVars = { user: usersDB[userID]};
     res.render("urls_new", templateVars);
   } else {
     res.redirect("http://localhost:8080/login");
@@ -92,8 +100,9 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  if (hasUser(req.cookies.user_id)) {
-    const templateVars = {shortURL: req.params.id, longURL: urlsDB[req.cookies.user_id][req.params.id], user: usersDB[req.cookies.user_id]};
+  const userID = req.session.userID;
+  if (hasUser(userID)) {
+    const templateVars = {shortURL: req.params.id, longURL: urlsDB[userID][req.params.id], user: usersDB[userID]};
     res.render("urls_show", templateVars);
   } else {
     res.redirect("http://localhost:8080/login");
@@ -101,8 +110,9 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  if (hasUser(req.cookies.user_id)) {
-    const templateVars = { user: usersDB[req.cookies.user_id], urls: urlsDB[req.cookies.user_id] };
+  const userID = req.session.userID;
+  if (hasUser(userID)) {
+    const templateVars = { user: usersDB[userID], urls: urlsDB[userID] };
     res.render("urls_index", templateVars);
   } else {
     res.redirect("http://localhost:8080/login");
@@ -110,11 +120,9 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDataBase[req.params.shortURL];
+  const longURL = getLongURL(req.params.shortURL);
   res.redirect(longURL);
 });
-
-
 
 app.post("/register", (req, res) => {
   if(!req.body.email || !req.body.password) {
@@ -122,9 +130,11 @@ app.post("/register", (req, res) => {
   } else if (hasUserEmail(req.body.email)) {
     res.sendStatus(400);
   } else {
-    const user_id = generateRandomString();
-    usersDB[user_id] = {"id": user_id, "email": req.body.email, "password": req.body.password};
-    res.cookie('user_id', user_id);
+    const userID = generateRandomString();
+    const password = req.body.password;
+    const hashedPassword = bcrypt.hashSync(password, 10);
+    usersDB[userID] = {"id": userID, "email": req.body.email, "password": hashedPassword};
+    req.session.userID = userID;
     res.redirect("http://localhost:8080/urls/");
   }
 });
@@ -132,20 +142,22 @@ app.post("/register", (req, res) => {
 app.post("/login", (req, res) => {
   if (!hasUserEmail(req.body.email)) {
     res.sendStatus(403);
-  } else if (!hasUserPassword(req.body.email, req.body.password)) {
-    res.sendStatus(403);
-  } else {
-    res.cookie('user_id', getUser_id(req.body.email));
+  } else if (bcrypt.compareSync(req.body.password, usersDB[getUserID(req.body.email)].password)) {
+    req.session.userID = getUserID(req.body.email);
     res.redirect("http://localhost:8080/urls");
+  } else {
+    res.sendStatus(403);
   }
 });
 
 app.post("/logout", (req, res) => {
+  req.session = null;
   res.redirect("http://localhost:8080/urls/login");
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlsDB[req.cookies.user_id][req.params.id];
+  const userID = req.session.userID;
+  delete urlsDB[userID][req.params.id];
   res.redirect("http://localhost:8080/urls/");
 });
 
@@ -155,8 +167,9 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  const userID = req.session.userID;
   const shortURL = generateRandomString();
-  const userURLs = urlsDB[req.cookies.user_id] || {};
+  const userURLs = urlsDB[userID] || {};
   const oldShortURL = getShortURL(req.body.longURL, userURLs);
   if (oldShortURL) {
     delete userURLs[oldShortURL];
@@ -164,7 +177,7 @@ app.post("/urls", (req, res) => {
   } else {
     userURLs[shortURL] = req.body.longURL;
   }
-  urlsDB[req.cookies.user_id] = userURLs;
+  urlsDB[userID] = userURLs;
   res.redirect('http://localhost:8080/urls/' + shortURL);
 });
 
