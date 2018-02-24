@@ -3,10 +3,10 @@
 TinyApp is a URL shortener web application that is designed to facillitate more efficient data commmunication and media sharing on the web
 
 ##Screenshot
-![](images/Login page.png)
-![](images/Register page.png)
-![](images/shortURL and longURL page.png)
-![](images/shortURL creation page.png)
+![](images/Login%20page.png)
+![](images/Register%20page.png)
+![](images/shortURL%20and%20longURL%20page.png)
+![](shortURL%20creation%20page.png)
 
 
 ##Project Dependencies
