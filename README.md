@@ -1,23 +1,32 @@
-#**TinyApp Project
+# TinyApp Project
 
 TinyApp is a URL shortener web application that is designed to facillitate more efficient data commmunication and media sharing on the web
 
-##Screenshot
+## Screenshots
+
+### Login page
+![](images/Login%20page.png)
+
+### Registration page
+![](images/Register%20page.png)
+
+### shortURL and longURL page
+![](images/shortURL%20and%20longURL%20page.png)
+
+### shortURL creation page
+![](images/shortURL%20creation%20page.png)
 
 
-
-##Project Dependencies
+## Project Dependencies
 
 bcrypt
 body-parser
-cookie-parser
 cookie-session
 ejs
 express
 
-##Setup Steps
+## Setup Steps
 
-download the project and npm install should install all the dependencies
-add 'node express_server.js' to 'start:' in the package.json
-enter npm start in your Command Line
+download the project and run npm install to install all the dependencies
+run 'node express_server.js' on your Command line
 then run localhost: in your browser, where PORT is the port you have set in express_server.js, note by default it is set to 8080
