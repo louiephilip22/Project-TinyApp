@@ -1,19 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <title>TinyApp</title>
 </head>
 <body>
   <% include partials/_header %>
-  <ul>
+  <p><a href="/urls/new" >Create a New Short Link</a></p>
+  <table>
+      <tr>
+        <th>List of shortURL and longURL</th>
+      </tr>
     <% for (let shortURL in urls) { %>
-     <li><%= shortURL %></a> : <%= urls[shortURL] %>
-       <a href="urls/<%= shortURL %>">Edit</a>
-       <form method="POST" action= "/urls/<%= shortURL %>/delete/" >
-         <button>Delete 🗑</button>
-       </form>
-     </li>
+      <tr>
+        <td><%= shortURL %>: <a href="http://<%= urls[shortURL] %>"> <%= urls[shortURL] %></a></td>
+        <td><a href="/urls/<%= shortURL %>">Edit</a></td>
+        <td>
+          <form method="POST" action= "/urls/<%= shortURL %>/delete/" >
+            <button>Delete 🗑</button>
+          </form>
+        </td>
+      </tr>
     <% } %>
-  </ul>
+  </table>
 </body>
 </html>
