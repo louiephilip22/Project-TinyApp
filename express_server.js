@@ -78,11 +78,12 @@ name: 'session',
 keys: [process.env.SECRET_KEY || 'philip']
 }));
 
-
 const PORT = process.env.PORT || 8080;
 
-
 app.set("view engine", "ejs");
+
+
+//Registration page
 app.get("/register", (req, res) => {
   const userID = req.session.userID;
   if (hasUser(userID)) {
@@ -93,6 +94,7 @@ app.get("/register", (req, res) => {
 });
 
 
+//login page
 app.get("/login", (req, res) => {
   const userID = req.session.userID;
   if (hasUser(userID)) {
@@ -103,6 +105,7 @@ app.get("/login", (req, res) => {
 });
 
 
+//shortURL creation page
 app.get("/urls/new", (req, res) => {
   const userID = req.session.userID;
   if (hasUser(userID)) {
@@ -114,6 +117,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 
+//specific URL page
 app.get("/urls/:id", (req, res) => {
   const userID = req.session.userID;
   if (hasUser(userID)) {
@@ -129,6 +133,7 @@ app.get("/urls/:id", (req, res) => {
 });
 
 
+//home page
 app.get("/urls", (req, res) => {
   const userID = req.session.userID;
   if (hasUser(userID)) {
@@ -140,6 +145,7 @@ app.get("/urls", (req, res) => {
 });
 
 
+//shortURL page
 app.get("/u/:shortURL", (req, res) => {
   let longURL = getLongURL(req.params.shortURL);
   if (longURL) {
@@ -149,12 +155,13 @@ app.get("/u/:shortURL", (req, res) => {
   }
 });
 
+
 app.get("/", (req, res) => {
   res.redirect("/urls");
 });
 
 
-
+//Receive email and password
 app.post("/register", (req, res) => {
   if(!req.body.email || !req.body.password) {
     res.status(400).send('Email and password required! Try again! (<a href="/register">Register</a>).');
@@ -171,6 +178,7 @@ app.post("/register", (req, res) => {
 });
 
 
+//check email and password
 app.post("/login", (req, res) => {
   if(!req.body.email || !req.body.password) {
     res.status(400).send('Email and password required!');
@@ -185,13 +193,14 @@ app.post("/login", (req, res) => {
 });
 
 
+//logout
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect("/urls");
 });
 
 
-
+//delete
 app.post("/urls/:id/delete", (req, res) => {
   const userID = req.session.userID;
   if (hasUser(userID)) {
@@ -207,7 +216,7 @@ app.post("/urls/:id/delete", (req, res) => {
 });
 
 
-
+//longURL form
 app.post("/urls/:id", (req, res) => {
   const userID = req.session.userID;
   if (hasUser(userID)) {
@@ -222,7 +231,7 @@ app.post("/urls/:id", (req, res) => {
   }
 });
 
-
+//shortURL and longURL
 app.post("/urls", (req, res) => {
   const userID = req.session.userID;
   if (hasUser(userID)) {
